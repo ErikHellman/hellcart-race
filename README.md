@@ -1,54 +1,107 @@
-# React + TypeScript + Vite
+# HellCart Race 🏎️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 3D go-kart racing game built with React, Three.js, and TypeScript. Race against AI opponents on an elliptical track with realistic physics, combat mechanics, and dynamic terrain.
 
-Currently, two official plugins are available:
+## 🎮 Game Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **3D Racing**: Immersive 3D go-kart racing with realistic physics
+- **AI Opponents**: Two computer-controlled racers with different driving styles:
+  - **Aggressive AI** (Orange): Fast and takes risks
+  - **Cautious AI** (Blue): Steady and safe driving
+- **Combat Racing**: Ram opponents to damage them and send them back to start
+- **Hit Point System**: Each cart has 10 HP, lose all HP and reset to start position
+- **Dynamic Track**: Elliptical track with hills, slopes, and elevation changes
+- **Realistic Physics**: Acceleration, deceleration, momentum, and speed-dependent steering
+- **Wall Penalties**: Hit walls and get reset to track center with 3-second timeout
+- **Health Indicators**: Visual health bars above each cart
+- **Following Camera**: Third-person camera that follows the player cart
 
-## Expanding the ESLint configuration
+## 🎯 Controls
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **↑ Arrow Up**: Accelerate forward
+- **↓ Arrow Down**: Reverse/brake
+- **← Arrow Left**: Turn left
+- **→ Arrow Right**: Turn right
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🛠️ Technologies Used
+
+- **React 19** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Three.js** - 3D graphics library
+- **React Three Fiber** - React renderer for Three.js
+- **React Three Drei** - Useful helpers for R3F
+- **Vite** - Fast build tool and dev server
+- **ESLint** - Code linting
+- **GitHub Actions** - CI/CD for automatic deployment
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ 
+- npm
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/hellcart-race.git
+cd hellcart-race
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🏗️ Architecture
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The game uses a component-based architecture with:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- **GoCart Component**: Individual cart logic with physics and AI
+- **Track Component**: Procedural track generation with elevation mapping
+- **Collision System**: Wall detection and cart-to-cart collision handling
+- **Physics Engine**: Custom physics with acceleration, momentum, and realistic steering
+- **AI System**: Waypoint navigation with different driving personalities
+
+## 🎨 Game Mechanics
+
+### Combat System
+- Carts can ram each other to deal damage
+- Hit cart takes 1 damage and is stunned for 100ms
+- Carts with 0 HP reset to their starting position
+
+### Physics System
+- Realistic acceleration and deceleration
+- Speed-dependent steering responsiveness
+- Momentum conservation and friction simulation
+- Track elevation following with automatic cart alignment
+
+### Penalty System
+- Wall collisions: 3-second timeout at track center
+- Cart collisions: 100ms stun for the victim
+- HP depletion: Full reset to starting position
+
+## 🤝 Contributing
+
+**Pull requests are welcome, but only if the code is written by an AI!** 
+
+This project is an experiment in AI-assisted development. All code contributions should be generated by AI assistants (Claude, ChatGPT, Copilot, etc.) rather than hand-written by humans. 
+
+When submitting a PR:
+- Specify which AI assistant was used
+- Include the prompts or conversation that led to the code changes
+- Ensure the AI-generated code follows the existing patterns and architecture
+
+This helps us explore the capabilities and limitations of AI in software development while building something fun!
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
