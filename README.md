@@ -19,6 +19,7 @@ A 3D go-kart racing game built with React, Three.js, and TypeScript. Race agains
 - **Dual Camera Modes**: 
   - **Driver View**: Third-person camera that follows the player cart
   - **Overview Mode**: Bird's-eye view with mouse controls to rotate, zoom, and pan around the entire track
+- **Real-time Race Statistics**: Live stats panel showing laps completed, wall hits, and cart collisions for all racers
 
 ## 🎯 Controls
 
@@ -100,6 +101,12 @@ The game uses a component-based architecture with:
 - Wall collisions: 3-second timeout at track center
 - Cart collisions: 100ms stun for the victim
 - HP depletion: Full reset to starting position
+
+### Race Statistics System
+- **Lap Tracking**: Checkpoint-based system tracks completed laps for each racer
+- **Wall Hit Counter**: Records penalty incidents when carts hit track boundaries
+- **Collision Counter**: Tracks combat interactions between carts
+- **Live Updates**: Real-time stats panel in top-right corner with color-coded cart identification
 
 ## 🤝 Contributing
 

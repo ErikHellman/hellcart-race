@@ -66,7 +66,7 @@ function useKeyboardControls() {
   return keys
 }
 
-function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'normal', cartId, allCartPositions, onCartCollision, startPosition }: { 
+function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'normal', cartId, allCartPositions, onCartCollision, startPosition, onStatsUpdate }: { 
   onPositionChange?: (position: THREE.Vector3, rotation: number) => void, 
   trackPoints: THREE.Vector3[],
   isPlayer?: boolean,
@@ -74,7 +74,8 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
   cartId: string,
   allCartPositions: Map<string, THREE.Vector3>,
   onCartCollision?: (cartId: string) => void,
-  startPosition: THREE.Vector3
+  startPosition: THREE.Vector3,
+  onStatsUpdate?: (cartId: string, stats: { laps: number, wallHits: number, cartHits: number }) => void
 }) {
   const groupRef = useRef<THREE.Group>(null)
   const keys = useKeyboardControls()
@@ -89,6 +90,10 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
   const [hitPoints, setHitPoints] = useState<number>(10)
   const [isStunned, setIsStunned] = useState<boolean>(false)
   const [, setStunTimeLeft] = useState<number>(0)
+  const [laps, setLaps] = useState<number>(0)
+  const [wallHits, setWallHits] = useState<number>(0)
+  const [cartHits, setCartHits] = useState<number>(0)
+  const [lastCheckpoint, setLastCheckpoint] = useState<number>(-1)
   
   const getTrackHeightAt = (x: number, z: number): number => {
     // Find the closest track point to get height
@@ -206,6 +211,9 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
     setCurrentTrackIndex(closestIndex)
     setIsPaused(true)
     setPauseTimeLeft(3.0)
+    
+    // Increment wall hits
+    setWallHits(prev => prev + 1)
   }
   
   const resetToStart = () => {
@@ -222,6 +230,7 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
     setPauseTimeLeft(0)
     setIsStunned(false)
     setStunTimeLeft(0)
+    setLastCheckpoint(-1)
   }
   
   const takeDamage = () => {
@@ -231,6 +240,9 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
     setStunTimeLeft(0.1) // 100ms
     setVelocity(0)
     setAngularVelocity(0)
+    
+    // Increment cart hits
+    setCartHits(prev => prev + 1)
     
     if (newHitPoints <= 0) {
       resetToStart()
@@ -442,6 +454,23 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
     
     // Update cart position in global map
     allCartPositions.set(cartId, newPosition)
+    
+    // Check for lap completion
+    const checkpointSize = trackPoints.length / 4 // 4 checkpoints per lap
+    const currentCheckpoint = Math.floor(currentTrackIndex / checkpointSize)
+    
+    if (currentCheckpoint !== lastCheckpoint) {
+      if (currentCheckpoint === 0 && lastCheckpoint === 3) {
+        // Completed a full lap
+        setLaps(prev => prev + 1)
+      }
+      setLastCheckpoint(currentCheckpoint)
+    }
+    
+    // Update stats
+    if (onStatsUpdate) {
+      onStatsUpdate(cartId, { laps, wallHits, cartHits })
+    }
   })
 
   const cartColor = isPlayer ? "#ff4444" : (aiStyle === 'aggressive' ? "#ff8800" : "#0088ff")
@@ -632,7 +661,10 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
   )
 }
 
-function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THREE.Vector3, rotation: number) => void }) {
+function Track({ onCartPositionChange, onStatsUpdate }: { 
+  onCartPositionChange?: (position: THREE.Vector3, rotation: number) => void,
+  onStatsUpdate?: (cartId: string, stats: { laps: number, wallHits: number, cartHits: number }) => void
+}) {
   const trackRef = useRef<THREE.Group>(null)
   const [allCartPositions] = useState<Map<string, THREE.Vector3>>(new Map())
   const cartRefs = useRef<Map<string, any>>(new Map())
@@ -931,6 +963,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         allCartPositions={allCartPositions}
         onCartCollision={handleCartCollision}
         startPosition={new THREE.Vector3(45, 1.0, 0)}
+        onStatsUpdate={onStatsUpdate}
       />
       
       <GoCart 
@@ -941,6 +974,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         allCartPositions={allCartPositions}
         onCartCollision={handleCartCollision}
         startPosition={new THREE.Vector3(45, 1.0, -4.95)}
+        onStatsUpdate={onStatsUpdate}
       />
       
       <GoCart 
@@ -951,6 +985,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         allCartPositions={allCartPositions}
         onCartCollision={handleCartCollision}
         startPosition={new THREE.Vector3(45, 1.0, 4.95)}
+        onStatsUpdate={onStatsUpdate}
       />
     </group>
   )
@@ -981,14 +1016,37 @@ export default function RaceTrack() {
   const [cartPosition, setCartPosition] = useState<THREE.Vector3>(new THREE.Vector3(45, 1.0, 0))
   const [cartRotation, setCartRotation] = useState<number>(Math.PI / 2)
   const [isOverviewMode, setIsOverviewMode] = useState<boolean>(false)
+  const [cartStats, setCartStats] = useState<Map<string, { laps: number, wallHits: number, cartHits: number }>>(new Map())
   
   const handleCartPositionChange = (position: THREE.Vector3, rotation: number) => {
     setCartPosition(position)
     setCartRotation(rotation)
   }
   
+  const handleStatsUpdate = (cartId: string, stats: { laps: number, wallHits: number, cartHits: number }) => {
+    setCartStats(prev => new Map(prev.set(cartId, stats)))
+  }
+  
   const toggleCameraView = () => {
     setIsOverviewMode(!isOverviewMode)
+  }
+  
+  const getCartName = (cartId: string) => {
+    switch(cartId) {
+      case 'player': return 'Player'
+      case 'ai1': return 'Aggressive AI'
+      case 'ai2': return 'Cautious AI'
+      default: return cartId
+    }
+  }
+  
+  const getCartColor = (cartId: string) => {
+    switch(cartId) {
+      case 'player': return '#ff4444'
+      case 'ai1': return '#ff8800'
+      case 'ai2': return '#0088ff'
+      default: return '#666666'
+    }
   }
 
   return (
@@ -1024,6 +1082,38 @@ export default function RaceTrack() {
         {isOverviewMode ? '🏎️ Driver View' : '🗺️ Overview'}
       </button>
       
+      {/* Stats panel */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        right: '20px',
+        zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        color: 'white',
+        padding: '15px',
+        borderRadius: '10px',
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        minWidth: '200px',
+        boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+      }}>
+        <h3 style={{ margin: '0 0 10px 0', textAlign: 'center', color: '#fff' }}>Race Stats</h3>
+        {Array.from(cartStats.entries()).map(([cartId, stats]) => (
+          <div key={cartId} style={{ 
+            marginBottom: '10px', 
+            padding: '8px',
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            borderRadius: '5px',
+            borderLeft: `4px solid ${getCartColor(cartId)}`
+          }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{getCartName(cartId)}</div>
+            <div>Laps: {stats.laps}</div>
+            <div>Wall Hits: {stats.wallHits}</div>
+            <div>Cart Hits: {stats.cartHits}</div>
+          </div>
+        ))}
+      </div>
+      
       <Canvas
         camera={{
           position: isOverviewMode ? [0, 80, 0] : [0, 20, 20],
@@ -1033,7 +1123,7 @@ export default function RaceTrack() {
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
-        <Track onCartPositionChange={handleCartPositionChange} />
+        <Track onCartPositionChange={handleCartPositionChange} onStatsUpdate={handleStatsUpdate} />
         <CameraController cartPosition={cartPosition} cartRotation={cartRotation} isOverview={isOverviewMode} />
         {isOverviewMode && (
           <OrbitControls 
