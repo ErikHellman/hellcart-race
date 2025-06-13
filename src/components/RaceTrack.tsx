@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import * as React from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Text } from '@react-three/drei'
+import { Text, OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface Keys {
@@ -457,9 +457,152 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
   
   return (
     <group ref={groupRef}>
-      <mesh position={[0, 0.3, 0]}>
-        <boxGeometry args={[1.2, 0.4, 2]} />
+      {/* Main chassis - lower section */}
+      <mesh position={[0, 0.15, 0]}>
+        <boxGeometry args={[1.3, 0.2, 2.2]} />
         <meshStandardMaterial color={cartColor} transparent opacity={cartOpacity} />
+      </mesh>
+      
+      {/* Upper chassis section */}
+      <mesh position={[0, 0.35, 0.2]}>
+        <boxGeometry args={[1.1, 0.25, 1.6]} />
+        <meshStandardMaterial color={cartColor} transparent opacity={cartOpacity} />
+      </mesh>
+      
+      {/* Front bumper */}
+      <mesh position={[0, 0.2, 1.2]}>
+        <boxGeometry args={[1.0, 0.15, 0.3]} />
+        <meshStandardMaterial color="#222222" />
+      </mesh>
+      
+      {/* Rear spoiler */}
+      <mesh position={[0, 0.55, -1.0]}>
+        <boxGeometry args={[0.8, 0.1, 0.15]} />
+        <meshStandardMaterial color="#222222" />
+      </mesh>
+      
+      {/* Side panels */}
+      <mesh position={[-0.6, 0.3, 0]}>
+        <boxGeometry args={[0.1, 0.3, 1.8]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+      <mesh position={[0.6, 0.3, 0]}>
+        <boxGeometry args={[0.1, 0.3, 1.8]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+      
+      {/* Driver seat */}
+      <mesh position={[0, 0.5, -0.1]}>
+        <boxGeometry args={[0.6, 0.3, 0.8]} />
+        <meshStandardMaterial color="#4444ff" />
+      </mesh>
+      
+      {/* Seat back */}
+      <mesh position={[0, 0.7, -0.4]}>
+        <boxGeometry args={[0.6, 0.4, 0.1]} />
+        <meshStandardMaterial color="#4444ff" />
+      </mesh>
+      
+      {/* Steering wheel */}
+      <mesh position={[0, 0.65, 0.3]} rotation={[Math.PI / 6, 0, 0]}>
+        <torusGeometry args={[0.15, 0.02, 8, 16]} />
+        <meshStandardMaterial color="#111111" />
+      </mesh>
+      
+      {/* Dashboard */}
+      <mesh position={[0, 0.45, 0.6]}>
+        <boxGeometry args={[0.8, 0.1, 0.2]} />
+        <meshStandardMaterial color="#222222" />
+      </mesh>
+      
+      {/* Engine cover */}
+      <mesh position={[0, 0.4, -0.8]}>
+        <boxGeometry args={[0.6, 0.2, 0.6]} />
+        <meshStandardMaterial color="#555555" />
+      </mesh>
+      
+      {/* Engine details */}
+      <mesh position={[0, 0.52, -0.8]}>
+        <cylinderGeometry args={[0.08, 0.08, 0.15, 8]} />
+        <meshStandardMaterial color="#ff4444" />
+      </mesh>
+      
+      {/* Exhaust pipe */}
+      <mesh position={[-0.4, 0.25, -1.1]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.3, 8]} />
+        <meshStandardMaterial color="#444444" />
+      </mesh>
+      
+      {/* Front wheels with improved detail */}
+      <group position={[-0.55, 0.15, 0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
+          <meshStandardMaterial color="#222222" />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, 0.07]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.02, 16]} />
+          <meshStandardMaterial color="#666666" />
+        </mesh>
+      </group>
+      
+      <group position={[0.55, 0.15, 0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
+          <meshStandardMaterial color="#222222" />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, -0.07]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.02, 16]} />
+          <meshStandardMaterial color="#666666" />
+        </mesh>
+      </group>
+      
+      {/* Rear wheels with improved detail */}
+      <group position={[-0.55, 0.15, -0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
+          <meshStandardMaterial color="#222222" />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, 0.07]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.02, 16]} />
+          <meshStandardMaterial color="#666666" />
+        </mesh>
+      </group>
+      
+      <group position={[0.55, 0.15, -0.9]}>
+        <mesh rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[0.18, 0.18, 0.12, 16]} />
+          <meshStandardMaterial color="#222222" />
+        </mesh>
+        <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, -0.07]}>
+          <cylinderGeometry args={[0.12, 0.12, 0.02, 16]} />
+          <meshStandardMaterial color="#666666" />
+        </mesh>
+      </group>
+      
+      {/* Wheel suspension/axles */}
+      <mesh position={[0, 0.15, 0.9]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.03, 0.03, 1.1, 8]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+      <mesh position={[0, 0.15, -0.9]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.03, 0.03, 1.1, 8]} />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+      
+      {/* Headlights */}
+      <mesh position={[-0.3, 0.35, 1.05]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshStandardMaterial color="#ffffaa" emissive="#444400" />
+      </mesh>
+      <mesh position={[0.3, 0.35, 1.05]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
+        <meshStandardMaterial color="#ffffaa" emissive="#444400" />
+      </mesh>
+      
+      {/* Number plate */}
+      <mesh position={[0, 0.4, 1.1]}>
+        <boxGeometry args={[0.3, 0.15, 0.02]} />
+        <meshStandardMaterial color="#ffffff" />
       </mesh>
       
       {/* Health indicator */}
@@ -485,28 +628,6 @@ function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'nor
           <meshStandardMaterial color="#ff0000" />
         </mesh>
       )}
-      
-      <mesh position={[-0.5, 0.1, 0.8]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-      <mesh position={[0.5, 0.1, 0.8]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-      <mesh position={[-0.5, 0.1, -0.8]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-      <mesh position={[0.5, 0.1, -0.8]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[0.15, 0.15, 0.1, 16]} />
-        <meshStandardMaterial color="#333333" />
-      </mesh>
-      
-      <mesh position={[0, 0.6, -0.3]}>
-        <boxGeometry args={[0.8, 0.4, 0.6]} />
-        <meshStandardMaterial color="#4444ff" />
-      </mesh>
     </group>
   )
 }
@@ -835,18 +956,22 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
   )
 }
 
-function CameraController({ cartPosition, cartRotation }: { cartPosition: THREE.Vector3, cartRotation: number }) {
+function CameraController({ cartPosition, cartRotation, isOverview }: { cartPosition: THREE.Vector3, cartRotation: number, isOverview: boolean }) {
   const { camera } = useThree()
   
   useFrame(() => {
-    const cameraDistance = 8
-    const cameraHeight = 4
-    
-    const cameraX = cartPosition.x - Math.sin(cartRotation) * cameraDistance
-    const cameraZ = cartPosition.z - Math.cos(cartRotation) * cameraDistance
-    
-    camera.position.set(cameraX, cartPosition.y + cameraHeight, cameraZ)
-    camera.lookAt(cartPosition.x, cartPosition.y, cartPosition.z)
+    if (!isOverview) {
+      // Driver camera - following behind cart
+      const cameraDistance = 8
+      const cameraHeight = 4
+      
+      const cameraX = cartPosition.x - Math.sin(cartRotation) * cameraDistance
+      const cameraZ = cartPosition.z - Math.cos(cartRotation) * cameraDistance
+      
+      camera.position.set(cameraX, cartPosition.y + cameraHeight, cameraZ)
+      camera.lookAt(cartPosition.x, cartPosition.y, cartPosition.z)
+    }
+    // In overview mode, let OrbitControls handle the camera
   })
   
   return null
@@ -855,17 +980,53 @@ function CameraController({ cartPosition, cartRotation }: { cartPosition: THREE.
 export default function RaceTrack() {
   const [cartPosition, setCartPosition] = useState<THREE.Vector3>(new THREE.Vector3(45, 1.0, 0))
   const [cartRotation, setCartRotation] = useState<number>(Math.PI / 2)
+  const [isOverviewMode, setIsOverviewMode] = useState<boolean>(false)
   
   const handleCartPositionChange = (position: THREE.Vector3, rotation: number) => {
     setCartPosition(position)
     setCartRotation(rotation)
   }
+  
+  const toggleCameraView = () => {
+    setIsOverviewMode(!isOverviewMode)
+  }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
+    <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0, position: 'relative' }}>
+      {/* Camera toggle button */}
+      <button
+        onClick={toggleCameraView}
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 1000,
+          padding: '12px 20px',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          backgroundColor: isOverviewMode ? '#4CAF50' : '#2196F3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05)'
+          e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.4)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
+          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)'
+        }}
+      >
+        {isOverviewMode ? '🏎️ Driver View' : '🗺️ Overview'}
+      </button>
+      
       <Canvas
         camera={{
-          position: [0, 20, 20],
+          position: isOverviewMode ? [0, 80, 0] : [0, 20, 20],
           fov: 60,
         }}
         style={{ width: '100%', height: '100%', background: '#87CEEB' }}
@@ -873,7 +1034,19 @@ export default function RaceTrack() {
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <Track onCartPositionChange={handleCartPositionChange} />
-        <CameraController cartPosition={cartPosition} cartRotation={cartRotation} />
+        <CameraController cartPosition={cartPosition} cartRotation={cartRotation} isOverview={isOverviewMode} />
+        {isOverviewMode && (
+          <OrbitControls 
+            enablePan={true} 
+            enableZoom={true} 
+            enableRotate={true}
+            target={[0, 0, 0]}
+            minDistance={20}
+            maxDistance={150}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI / 2}
+          />
+        )}
         <Text
           position={[0, 8, 0]}
           fontSize={2}
@@ -881,7 +1054,7 @@ export default function RaceTrack() {
           anchorX="center"
           anchorY="middle"
         >
-          Go-Kart Race Track
+          Hellcart Racing!
         </Text>
       </Canvas>
     </div>
