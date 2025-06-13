@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import * as React from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Text } from '@react-three/drei'
+import { Text } from '@react-three/drei'
 import * as THREE from 'three'
 
 interface Keys {
@@ -66,11 +66,9 @@ function useKeyboardControls() {
   return keys
 }
 
-function GoCart({ onPositionChange, trackPoints, innerPoints, outerPoints, isPlayer = true, aiStyle = 'normal', cartId, allCartPositions, onCartCollision, startPosition }: { 
+function GoCart({ onPositionChange, trackPoints, isPlayer = true, aiStyle = 'normal', cartId, allCartPositions, onCartCollision, startPosition }: { 
   onPositionChange?: (position: THREE.Vector3, rotation: number) => void, 
   trackPoints: THREE.Vector3[],
-  innerPoints: THREE.Vector3[],
-  outerPoints: THREE.Vector3[],
   isPlayer?: boolean,
   aiStyle?: 'aggressive' | 'normal' | 'cautious',
   cartId: string,
@@ -87,10 +85,10 @@ function GoCart({ onPositionChange, trackPoints, innerPoints, outerPoints, isPla
   const [angularVelocity, setAngularVelocity] = useState<number>(0)
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0)
   const [isPaused, setIsPaused] = useState<boolean>(false)
-  const [pauseTimeLeft, setPauseTimeLeft] = useState<number>(0)
+  const [, setPauseTimeLeft] = useState<number>(0)
   const [hitPoints, setHitPoints] = useState<number>(10)
   const [isStunned, setIsStunned] = useState<boolean>(false)
-  const [stunTimeLeft, setStunTimeLeft] = useState<number>(0)
+  const [, setStunTimeLeft] = useState<number>(0)
   
   const getTrackHeightAt = (x: number, z: number): number => {
     // Find the closest track point to get height
@@ -308,7 +306,7 @@ function GoCart({ onPositionChange, trackPoints, innerPoints, outerPoints, isPla
     }
   }
   
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (!groupRef.current) return
     
     // Handle pause countdown
@@ -449,19 +447,13 @@ function GoCart({ onPositionChange, trackPoints, innerPoints, outerPoints, isPla
   const cartColor = isPlayer ? "#ff4444" : (aiStyle === 'aggressive' ? "#ff8800" : "#0088ff")
   const cartOpacity = isPaused ? 0.5 : isStunned ? 0.7 : 1.0
   
-  // Add collision detection callback
+  // Expose takeDamage function for collision handling
   React.useEffect(() => {
-    const handleCollision = (targetCartId: string) => {
-      if (targetCartId === cartId) {
-        takeDamage()
-      }
-    }
-    
-    if (onCartCollision) {
-      // This is a bit of a hack - we need a way to register collision handlers
-      // In a real implementation, you'd want a proper event system
-    }
-  }, [cartId, onCartCollision])
+    // Register this cart's takeDamage function for collision handling
+    const cartRef = { takeDamage }
+    // Note: In a real implementation, you'd register this with a collision system
+    console.log('Cart registered:', cartId, cartRef)
+  }, [cartId, onCartCollision, takeDamage])
   
   return (
     <group ref={groupRef}>
@@ -591,16 +583,6 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
 
   const { point: startPoint, perpendicular: startLinePerpendicular } = getStartLinePosition()
 
-  const getGoCartPositionAndRotation = (): { position: [number, number, number], rotation: [number, number, number] } => {
-    const behindStartDistance = 3
-    const direction = new THREE.Vector3().subVectors(trackPoints[1], trackPoints[0]).normalize()
-    const goCartPosition = startPoint.clone().sub(direction.multiplyScalar(behindStartDistance))
-    const rotationY = Math.atan2(direction.x, direction.z)
-    return {
-      position: [goCartPosition.x, 0.5, goCartPosition.z],
-      rotation: [0, rotationY, 0]
-    }
-  }
 
   return (
     <group ref={trackRef}>
@@ -614,10 +596,8 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={trackPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const vertices: number[] = []
-              const indices: number[] = []
               const trackWidth = 12
               
               // Calculate all inner and outer edge points
@@ -667,13 +647,11 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return new Float32Array(triangleVertices)
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
           <bufferAttribute
             attach="attributes-normal"
-            count={trackPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const normals: number[] = []
               
               for (let i = 0; i < trackPoints.length * 6; i++) {
@@ -681,13 +659,11 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return normals
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
           <bufferAttribute
             attach="attributes-color"
-            count={trackPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const colors: number[] = []
               
               for (let i = 0; i < trackPoints.length; i++) {
@@ -705,8 +681,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return colors
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
         </bufferGeometry>
       </mesh>
@@ -716,8 +691,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={outerPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const wallVertices: number[] = []
               const wallHeight = 2
               
@@ -737,13 +711,11 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return wallVertices
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
           <bufferAttribute
             attach="attributes-normal"
-            count={outerPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const normals: number[] = []
               
               for (let i = 0; i < outerPoints.length; i++) {
@@ -758,8 +730,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return normals
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
         </bufferGeometry>
       </mesh>
@@ -769,8 +740,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={innerPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const wallVertices: number[] = []
               const wallHeight = 2
               
@@ -790,13 +760,11 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return wallVertices
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
           <bufferAttribute
             attach="attributes-normal"
-            count={innerPoints.length * 6}
-            array={new Float32Array((() => {
+            args={[new Float32Array((() => {
               const normals: number[] = []
               
               for (let i = 0; i < innerPoints.length; i++) {
@@ -811,8 +779,7 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
               }
               
               return normals
-            })())}
-            itemSize={3}
+            })()), 3]}
           />
         </bufferGeometry>
       </mesh>
@@ -838,8 +805,6 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
       <GoCart 
         onPositionChange={onCartPositionChange} 
         trackPoints={trackPoints} 
-        innerPoints={innerPoints} 
-        outerPoints={outerPoints} 
         isPlayer={true}
         cartId="player"
         allCartPositions={allCartPositions}
@@ -849,8 +814,6 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
       
       <GoCart 
         trackPoints={trackPoints} 
-        innerPoints={innerPoints} 
-        outerPoints={outerPoints} 
         isPlayer={false}
         aiStyle="aggressive"
         cartId="ai1"
@@ -861,8 +824,6 @@ function Track({ onCartPositionChange }: { onCartPositionChange?: (position: THR
       
       <GoCart 
         trackPoints={trackPoints} 
-        innerPoints={innerPoints} 
-        outerPoints={outerPoints} 
         isPlayer={false}
         aiStyle="cautious"
         cartId="ai2"
