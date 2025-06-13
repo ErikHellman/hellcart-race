@@ -2,6 +2,8 @@
 
 A 3D go-kart racing game built with React, Three.js, and TypeScript. Race against AI opponents on an elliptical track with realistic physics, combat mechanics, and dynamic terrain.
 
+🎮 **[Play the game now!](https://erikhellman.github.io/hellcart-race)** 🎮
+
 ## 🎮 Game Features
 
 - **3D Racing**: Immersive 3D go-kart racing with realistic physics
